@@ -28,3 +28,10 @@ jobs:
       
     - name: Run E2E tests
       run: npm run test:e2e
+
+  deploy:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deployment
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
