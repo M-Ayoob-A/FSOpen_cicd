@@ -31,6 +31,8 @@ const App = () => {
     previous = pokemonList.find(({ id }) => id === pokemonId - 1)
     next = pokemonList.find(({ id }) => id === pokemonId + 1)
   }
+  // This is a test for Exercise 13
+console.log('Testing PR triggers')
 
   return (
     <Routes>
