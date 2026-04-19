@@ -3,15 +3,18 @@ name: Periodic Hello
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *' # Runs every 15 minutes
-
+    - cron: '0 0 * * *' 
 jobs:
   health_check:
     runs-on: ubuntu-latest
     steps:
+      
+      - name: Say Hello
+        run: echo "hello!"
+
+      
       - name: Check the live pokemon app
         uses: jasonit/url-health-check@v1
-      - run: echo "hello!"  
         with:
           url: https://ci-cd-exercises-p3d3.onrender.com/health
           follow-redirect: false
