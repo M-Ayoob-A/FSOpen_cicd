@@ -7,45 +7,43 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize]
-# just to test PR triggers for exercise 13
+# just to test PR triggers for Exercise 13
+
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    - name: Install dependencies
-      run: npm ci
-    - name: Check style
-      run: npm run eslint  
-    - name: Build
-      run: npm run build
-    - name: Run tests
-      run: npm test
-    
-    
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-      
-    - name: Run E2E tests
-      run: npm run test:e2e
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Check style
+        run: npm run eslint  
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm test
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run E2E tests
+        run: npm run test:e2e
   
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
-    steps: #This comment is just to test the skip logic 
-    - uses: actions/checkout@v4
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.75.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEFAULT_BUMP: patch
+    steps: #This comment is just to test the skip logic
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
 
   deploy:
-    needs: [simple_deployment_pipeline]
+    needs: [tag_release]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
     steps:
@@ -53,16 +51,15 @@ jobs:
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
   
   notify_success:
-    needs: [tag_release]
+    needs: [deploy]
     runs-on: ubuntu-latest
     if: success()
-
     steps:
       - name: Discord Notification (Success)
         uses: sarisia/actions-status-discord@v1.16.0
         with:
-         webhook: ${{ secrets.DISCORD_WEBHOOK }}
-         description: |
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          description: |
             🚀 Deployment successful
             Repository: ${{ github.repository }}
             Commit: ${{ github.sha }}
@@ -70,21 +67,17 @@ jobs:
             Branch: ${{ github.ref_name }}
 
   notify_failure:
-    needs: [simple_deployment_pipeline]
+    needs: [simple_deployment_pipeline, tag_release, deploy]
     runs-on: ubuntu-latest
     if: failure()
-
     steps:
       - name: Discord Notification (Failure)
         uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           description: |
-              ❌ Test failed
-              Repository: ${{ github.repository }}
-              Commit: ${{ github.sha }}
-              Author: ${{ github.actor }}
-              Branch: ${{ github.ref_name }}
-
-            
-
+            ❌ Pipeline failed
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Branch: ${{ github.ref_name }}
