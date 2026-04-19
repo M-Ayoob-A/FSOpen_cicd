@@ -14,7 +14,7 @@ jobs:
 
       
       - name: Check the live pokemon app
-        uses: jasonit/url-health-check@v1
+        uses: jasonet/url-health-check@v1
         with:
           url: https://ci-cd-exercises-p3d3.onrender.com/health
           follow-redirect: false
