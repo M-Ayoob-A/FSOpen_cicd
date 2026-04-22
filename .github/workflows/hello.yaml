@@ -2,7 +2,7 @@ name: Hello World!
 
 on:
   push:
-    branch:
+    branches:
     - main
 
 jobs:
