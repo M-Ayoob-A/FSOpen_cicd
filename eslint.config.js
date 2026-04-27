@@ -82,5 +82,12 @@ module.exports = [
         ...globals.node
       },
     },
+  },
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node // set node for global, not for single file unlike aboves
+      },
+    },
   }
 ]
