@@ -32,13 +32,19 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFiles": ["<rootDir>/jest.setup.js"]
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "testPathIgnorePatterns": [
+      "e2e-tests"
+    ]
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-runtime": "^7.29.0",
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
+    "@flydotio/dockerfile": "^0.7.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "babel-jest": "^30.3.0",
@@ -56,5 +62,8 @@
     "webpack": "^5.105.4",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.3"
+  },
+  "volta": {
+    "node": "20.20.2"
   }
 }

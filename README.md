@@ -11,3 +11,5 @@ Start by running `npm install` inside the project folder
 `npm run eslint` to run eslint
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
+
+visit: https://fs-pokedex-blue-sky-6314.fly.dev/
