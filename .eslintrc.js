@@ -1,49 +1,70 @@
 module.exports = {
-  "env": {
-    "browser": true,
-    "es6": true,
-    "jest/globals": true
+  env: {
+    browser: true,
+    es6: true,
+    node: true,
+    jest: true  
   },
-  "extends": [
+  extends: [
     "eslint:recommended",
     "plugin:react/recommended"
   ],
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
     },
-    "ecmaVersion": 2018,
-    "sourceType": "module"
+    ecmaVersion: 2018,
+    sourceType: "module"
   },
-  "plugins": [
-    "react", "jest"
+  plugins: [
+    "react",
+    "jest"
   ],
-  "rules": {
-    "indent": [
-      "error",
-        2
-      ],
-    "linebreak-style": [
-      "error",
-      "unix"
-    ],
-    "quotes": [
-      "error",
-      "single"
-    ],
-    "semi": [
-      "error",
-      "never"
-    ],
-    "eqeqeq": "error",
-    "no-trailing-spaces": "error",
-    "object-curly-spacing": [
-      "error", "always"
-    ],
-    "arrow-spacing": [
-      "error", { "before": true, "after": true }
-    ],
-    "no-console": "error",
+  rules: {
+    indent: ["error", 2],
+    linebreakStyle: ["error", "unix"],
+    quotes: ["error", "single"],
+    semi: ["error", "never"],
+    eqeqeq: "error",
+    noTrailingSpaces: "error",
+    objectCurlySpacing: ["error", "always"],
+    arrowSpacing: ["error", { before: true, after: true }],
+    noConsole: "error",
+    "react/prop-types": 0
+  }
+}
+module.exports = {
+  env: {
+    browser: true,
+    es6: true,
+    node: true,
+    jest: true   // ✅ this alone is enough
+  },
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    },
+    ecmaVersion: 2018,
+    sourceType: "module"
+  },
+  plugins: [
+    "react",
+    "jest"
+  ],
+  rules: {
+    indent: ["error", 2],
+    linebreakStyle: ["error", "unix"],
+    quotes: ["error", "single"],
+    semi: ["error", "never"],
+    eqeqeq: "error",
+    noTrailingSpaces: "error",
+    objectCurlySpacing: ["error", "always"],
+    arrowSpacing: ["error", { before: true, after: true }],
+    noConsole: "error",
     "react/prop-types": 0
   }
 }
