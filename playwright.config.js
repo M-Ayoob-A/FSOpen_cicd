@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
 
@@ -17,6 +18,7 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
+  
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
@@ -76,7 +78,7 @@ export default defineConfig({
     command: 'npm run start-prod',
     url: 'http://localhost:5001',
     timeout: 120 * 1000,
-    /* process */
+    
     reuseExistingServer: !process.env.CI,
   }
 });
