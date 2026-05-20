@@ -6,18 +6,18 @@ on:
       - main
 
 jobs: 
-  deployment_pipeline
-  runs-on: ubuntu-latest
+  deployment_pipeline:
+    runs-on: ubuntu-latest
 
-  steps:
-    - uses: actions/checkout@v6
-    - uses: action/setup-node@v6
-      with: 
-        node-version: '24'
-    - name: install the dependancies
-      run: npm install
+    steps:
+      - uses: actions/checkout@v6
+      - uses: action/setup-node@v6
+        with: 
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
 
-    - name: Check style
-      run: npm run elsint
+      - name: Check style
+        run: npm run elsint
 
       
