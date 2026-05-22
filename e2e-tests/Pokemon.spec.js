@@ -14,4 +14,13 @@ describe('Pokedex', () => {
       )
     ).toBeVisible()
   })
+  test('expect a pokemon description to be visible', async ({ page })=> 
+  {
+    await page.goto('http://localhost:8080/pokemon/ivysaur')
+    await expect(
+      page.getByText(
+        'chlorophyll'
+      )
+    ).toBeVisible()
+  })
 })
