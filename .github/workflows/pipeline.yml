@@ -26,4 +26,6 @@ jobs:
       - name: Build step
         run: npm run build
       
-      
+      - name: end-to-end test
+        run: npm test:e2e
+
