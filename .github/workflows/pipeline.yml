@@ -31,7 +31,6 @@ jobs:
           sudo npx playwright install-deps        
 
       - name: end-to-end test
-        run: |
-          npm run start
+        run:
           npm run test:e2e
 
