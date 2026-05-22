@@ -26,7 +26,8 @@ jobs:
       - name: Build step
         run: npm run build
       - name: Install playwright drivers 
-        run: npx playwright install         
+        run: npx playwright install 
+        run: sudo npx playwright install-deps        
 
       - name: end-to-end test
         run: npm run test:e2e
