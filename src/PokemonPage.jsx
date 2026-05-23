@@ -55,6 +55,8 @@ const PokemonPage = ({ previous, next }) => {
           </div>
         </div>
       </div>
+
+      <div>created by djtimog</div>
     </>
   )
 }
