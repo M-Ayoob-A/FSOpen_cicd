@@ -45,6 +45,19 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' }} 
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+  
+  tag_release: 
+    needs: deployment_pipeline
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: 
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
 
       - name: Bump version and push tag
         if: ${{ github.event_name == 'push' }}
