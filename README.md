@@ -17,4 +17,4 @@ Start by running `npm install` inside the project folder
 
 The app is deployed on render
 
-visit [here]('https://pokemon-ci-cd.onrender.com')
+visit [here](https://pokemon-ci-cd.onrender.com)
