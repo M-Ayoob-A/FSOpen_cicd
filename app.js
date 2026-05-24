@@ -8,6 +8,7 @@ app.get('/health', (req,res) => {
   res.status(200).json({ status: 'ok' })
 })
 
+
 const start = async () => {
   app.listen(PORT)
   console.log(`server started on port ${PORT}`)
