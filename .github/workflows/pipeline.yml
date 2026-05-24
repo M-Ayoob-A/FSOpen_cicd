@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  
+  pull-request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
 
 jobs: 
   deployment_pipeline:
@@ -39,4 +43,25 @@ jobs:
         run: npx playwright test
       
       - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }} 
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+  
+  tag_release: 
+    needs: deployment_pipeline
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: 
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
+
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' }}
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
