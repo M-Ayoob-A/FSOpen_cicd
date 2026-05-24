@@ -25,6 +25,7 @@ jobs:
         
       - name: Build step
         run: npm run build
+
       - name: Install playwright drivers 
         run:  | 
           npx playwright install 
@@ -33,4 +34,9 @@ jobs:
       - name: end-to-end test
         run:
           npm run test:e2e
-
+      
+      - name: end-to-end test
+        run: npx playwright test
+      
+      - name: Trigger deployment
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
