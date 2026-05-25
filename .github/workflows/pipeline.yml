@@ -85,9 +85,9 @@ jobs:
           status: ${{ job.status }}
           content: "Hello <@&${{ secrets.DISCORD_ROLE_ID }}>"
           title: "Deployment"
-          desctiption: | 
-            "Build and deploy to Github Pages"
-            Version:`${{ github.event.release.tag_name}}`
+          description: | 
+            Build and deploy to Github Pages
+            Version: ${{ github.event.release.tag_name }}
           image: ${{ secrets.EMBED_IMAGE }}
           color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
         
