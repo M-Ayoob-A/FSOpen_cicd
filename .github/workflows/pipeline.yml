@@ -68,3 +68,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: minor
+
+  notification: 
+    needs: [deployment_pipeline, tag_release]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification to discord
+        uses: sarisia/actions-status-discord@v1
+        if: |
+         ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
+         always()
+        with:
+          webhook: ${{ secrets.DiSCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hello <@&${{ secrets.DISCORD_ROLE_ID }}>"
+          title: "Deployment"
+          desctiption: | 
+            "Build and deploy to Github Pages"
+            Version:`${{ github.event.release.tag_name}}`
+          image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
+        
