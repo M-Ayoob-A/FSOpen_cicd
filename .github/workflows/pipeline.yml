@@ -24,13 +24,25 @@ jobs:
         run: npm test
       - name: Run Build
         run: npm run build
+      - name: Build Failed
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hey <@1264842173619109949>"
+          title: "Failure in CI/CD pipeline"
+          description: "Build Failed for commit"
+          url: "https://github.com/djtimog/fs-ci-cd"
+          username: Christian Ogunleye
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: npm run test:e2e
       - name: Trigger deployment
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
@@ -42,3 +54,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+      - name: Deployment Successful
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hey <@1264842173619109949>"
+          title: "Deployment Details"
+          description: "The deployment was successful for commit"
+          username: Christian Ogunleye
