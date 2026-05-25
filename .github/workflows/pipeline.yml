@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -24,8 +24,24 @@ jobs:
         run: npm test
       - name: Run Build
         run: npm run build
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npm run test:e2e
+  deploy:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')
+    steps:
+      - name: Trigger deployment
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  notify_failure:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
       - name: Build Failed
-        if: failure()
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -35,16 +51,25 @@ jobs:
           description: "Build Failed for commit"
           url: "https://github.com/djtimog/fs-ci-cd"
           username: Christian Ogunleye
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: npm run test:e2e
-      - name: Trigger deployment
-        if: github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')
-        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  notify_success:
+    needs: [deploy]
+    runs-on: ubuntu
+    if: success()
+    steps:
+      - name: Deployment Successful
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hey <@1264842173619109949>"
+          title: "Deployment Details"
+          description: "The deployment was successful"
+          username: Christian Ogunleye
 
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')
     steps:
@@ -54,13 +79,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-      - name: Deployment Successful
-        if: success()
-        uses: sarisia/actions-status-discord@v1
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          content: "Hey <@1264842173619109949>"
-          title: "Deployment Details"
-          description: "The deployment was successful for commit"
-          username: Christian Ogunleye
+      
