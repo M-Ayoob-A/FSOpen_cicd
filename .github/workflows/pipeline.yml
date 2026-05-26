@@ -54,11 +54,10 @@ jobs:
 
   notify_success:
     needs: [deploy]
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     if: success()
     steps:
       - name: Deployment Successful
-        if: success()
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -67,6 +66,7 @@ jobs:
           title: "Deployment Details"
           description: "The deployment was successful"
           username: Christian Ogunleye
+
 
   tag_release:
     needs: [deploy]
@@ -79,4 +79,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-      
