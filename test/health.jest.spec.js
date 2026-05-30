@@ -1,3 +1,5 @@
+/* global process */
+
 const { spawn } = require('child_process')
 const http = require('http')
 
@@ -27,7 +29,8 @@ const waitForServer = async () => {
     try {
       const response = await request('/version')
       if (response.status === 200) return
-    } catch {
+    } catch (error) {
+      void error
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
   }
