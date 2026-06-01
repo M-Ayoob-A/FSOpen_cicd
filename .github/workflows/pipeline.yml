@@ -34,6 +34,35 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Notify Discord about successful deployment
+        if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: GitHub Actions
+          severity: info
+          title: New version deployed
+          details: |
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Notify Discord about failed build
+        if: ${{ failure() }}
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: GitHub Actions
+          severity: error
+          title: Build failed
+          details: |
+            Repository: ${{ github.repository }}
+            Event: ${{ github.event_name }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Message: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
   tag_release:
     needs: [simple_deployment_pipeline]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
