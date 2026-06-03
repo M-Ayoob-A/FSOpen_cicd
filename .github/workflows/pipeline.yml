@@ -10,7 +10,7 @@ on:
     types: [ opened, synchronize ]
 
 jobs: 
-  deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,12 +42,24 @@ jobs:
       - name: end-to-end test
         run: npx playwright test
       
+    deploy:
+      needs: build_and_test
+
+      runs-on: ubuntu-latest
+
+      steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: 
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
       - name: Trigger deployment
         if: ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
-        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+          run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
   
   tag_release: 
-    needs: deployment_pipeline
+    needs: [ build_and_test, deploy ]
 
     runs-on: ubuntu-latest
 
@@ -69,8 +81,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: minor
 
-  notification: 
-    needs: [deployment_pipeline, tag_release]
+  notificatfy_success: 
+    needs: [build_and_test, deploy ]
 
     runs-on: ubuntu-latest
 
@@ -83,11 +95,30 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          content: "Hello <@&${{ secrets.DISCORD_ROLE_ID }}>"
+          # content: "Hello <@&${{ secrets.DISCORD_ROLE_ID }}>"
           title: "Deployment"
           description: | 
             Build and deploy to Github Pages
-            Version: ${{ github.event.release.tag_name }}
           image: ${{ secrets.EMBED_IMAGE }}
           color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
-        
+
+  notify_failure:
+    needs: [build_and_test,deploy ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send error notification 
+        uses: sarisia/actions-status-discord@v1
+        if: |
+         ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
+         failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hello <@&${{ secrets.DISCORD_ID }}>"
+          title: "Deployment"
+          description: | 
+            Build and deploy to Github Pages
+          image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
