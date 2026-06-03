@@ -12,15 +12,16 @@ permissions:
   contents: write
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Check style
         run: npm run eslint
       - name: Run tests
@@ -31,11 +32,21 @@ jobs:
         run: npm run test:e2e
       - name: Build project
         run: npm run build
+
+  deploy:
+    needs: [build_and_test]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger deployment
-        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  notify_success:
+    needs: [deploy]
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify Discord about successful deployment
-        if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -50,8 +61,13 @@ jobs:
           curl -H "Content-Type: application/json" \
             -d "$payload" \
             "$DISCORD_WEBHOOK"
+
+  notify_failure:
+    needs: [build_and_test, deploy]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify Discord about failed build
-        if: ${{ failure() }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -70,9 +86,10 @@ jobs:
           curl -H "Content-Type: application/json" \
             -d "$payload" \
             "$DISCORD_WEBHOOK"
+
   tag_release:
-    needs: [simple_deployment_pipeline]
-    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    needs: [deploy]
+    if: ${{ success() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
