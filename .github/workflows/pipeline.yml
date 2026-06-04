@@ -47,17 +47,17 @@ jobs:
 
     runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-node@v4
-          with: 
-            node-version: '24'
-        - name: install the dependancies
-          run: npm install
-        - name: Trigger deployment
-          if: ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
-          run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-  
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: 
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
+      - name: Trigger deployment
+        if: ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
   tag_release: 
     needs: [ build_and_test, deploy ]
 
