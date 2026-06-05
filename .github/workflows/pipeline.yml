@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: 
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
           node-version: '24'
       - name: install the dependancies
         run: npm install
@@ -31,31 +31,27 @@ jobs:
         run: npm run build
 
       - name: Install playwright drivers 
-        run:  | 
+        run: |
           npx playwright install 
-          sudo npx playwright install-deps        
+          sudo npx playwright install-deps
 
       - name: end-to-end test
-        run:
-          npm run test:e2e
+        run: npm run test:e2e
       
-      - name: end-to-end test
-        run: npx playwright test
-      
-    deploy:
-      needs: build_and_test
+  deploy:
+    needs: build_and_test
 
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-      steps:
+    steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: 
+        with:
           node-version: '24'
       - name: install the dependancies
         run: npm install
       - name: Trigger deployment
-        if: ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
   
   tag_release: 
@@ -69,13 +65,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: 
+        with:
           node-version: '24'
       - name: install the dependancies
         run: npm install
 
       - name: Bump version and push tag
-        if: ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
         uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -89,9 +85,7 @@ jobs:
     steps:
       - name: Send notification to discord
         uses: sarisia/actions-status-discord@v1
-        if: |
-         ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
-         always()
+        if: ${{ always() && github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -110,9 +104,7 @@ jobs:
     steps:
       - name: Send error notification 
         uses: sarisia/actions-status-discord@v1
-        if: |
-         ${{github.event_name == 'push' && !contains(toJson(github.event.commits.head_commit.message), '#skip') }}   
-         failure()
+        if: ${{ failure() && github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
