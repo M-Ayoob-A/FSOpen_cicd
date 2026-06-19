@@ -1,0 +1,116 @@
+name: Deployment pipeline
+
+on: 
+  push:
+    branches:
+      - main
+  
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
+
+jobs: 
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
+
+      - name: Check style
+        run: npm run eslint
+      
+      - name: Run Test
+        run: npm test
+        
+      - name: Build step
+        run: npm run build
+
+      - name: Install playwright drivers 
+        run: |
+          npx playwright install 
+          sudo npx playwright install-deps
+
+      - name: end-to-end test
+        run: npm run test:e2e
+      
+  deploy:
+    needs: build_and_test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+  
+  tag_release: 
+    needs: [ build_and_test, deploy ]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: install the dependancies
+        run: npm install
+
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: minor
+
+  notificatfy_success: 
+    needs: [build_and_test, deploy ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification to discord
+        uses: sarisia/actions-status-discord@v1
+        if: ${{ always() && github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          # content: "Hello <@&${{ secrets.DISCORD_ROLE_ID }}>"
+          title: "Deployment"
+          description: | 
+            Build and deploy to Github Pages
+          image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
+
+  notify_failure:
+    needs: [build_and_test,deploy ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send error notification 
+        uses: sarisia/actions-status-discord@v1
+        if: ${{ failure() && github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hello <@&${{ secrets.DISCORD_ID }}>"
+          title: "Deployment"
+          description: | 
+            Build and deploy to Github Pages
+          image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'success' && 'green' || job.status == 'failure' && 'red' || 'yellow' }}
