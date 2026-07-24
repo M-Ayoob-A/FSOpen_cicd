@@ -12,5 +12,5 @@ Start by running `npm install` inside the project folder
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
 
-App was deployed to this url:
+The application has been deployed to this url:
 https://fs-pokedex-pd98.onrender.com/
