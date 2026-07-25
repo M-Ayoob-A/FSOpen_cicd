@@ -45,12 +45,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: false
           DEFAULT_BUMP: patch
-  discord_notif:
-    runs-on: ubuntu-latest
-    needs: [simple_deployment_pipeline, tag_release]
-    steps:
-      - name: Send a notification to fullstack_webhook
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
