@@ -51,5 +51,6 @@ jobs:
     steps:
       - name: Send a notification to fullstack_webhook
       - uses: sarisia/actions-status-discord@v1
+        if: always()
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
