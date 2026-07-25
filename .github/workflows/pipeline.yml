@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [simple_deployment_pipeline, tag_release]
     steps:
-      - uses: sarisia/actions-status-discord@v1
       - name: Send a notification to fullstack_webhook
+      - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
