@@ -66,3 +66,4 @@ jobs:
           title: "push"
           description: "push to main branch"
           image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'failure' && 'ff0000' || '19ff00' }}
