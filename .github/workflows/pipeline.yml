@@ -40,6 +40,15 @@ jobs:
         run: flyctl deploy --remote-
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Send a notification to fullstack_webhook
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
+          image: ${{ secrets.EMBED_IMAGE }}
+          color: ${{ job.status == 'failure' && 'ff0000' || '19ff00' }}
   tag_release:
     if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
     needs: [simple_deployment_pipeline]
@@ -52,18 +61,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: false
           DEFAULT_BUMP: patch
-  discord_notif:
-    runs-on: ubuntu-latest
-    needs: [simple_deployment_pipeline]
-    steps:
-      - name: Send a notification to fullstack_webhook
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
-          title: "push"
-          description: "push to main branch"
-          image: ${{ secrets.EMBED_IMAGE }}
-          color: ${{ job.status == 'failure' && 'ff0000' || '19ff00' }}
+      
