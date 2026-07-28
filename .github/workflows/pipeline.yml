@@ -57,7 +57,7 @@ jobs:
     needs: [simple_deployment_pipeline]
     steps:
       - name: Send a notification to fullstack_webhook
-      - uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
