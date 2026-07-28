@@ -37,7 +37,7 @@ jobs:
         run: npm run test:e2e
       - name: Deploy to flyctl
         if: ${{ github.event_name != 'pull_request' }}
-        run: flyctl deploy --remote-only
+        run: flyctl deploy --remote-
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
   tag_release:
@@ -62,7 +62,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          content: "Hey <@Ratchat065>, the deployment pipeline has completed. Check the status below."
+          content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
           title: "push"
           description: "push to main branch"
           image: ${{ secrets.EMBED_IMAGE }}
