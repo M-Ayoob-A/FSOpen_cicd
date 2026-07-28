@@ -62,5 +62,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          content: 'Hey @Ratchat065'
-          title: 'push to main branch'
+          content: "Hey <@Ratchat065>, the deployment pipeline has completed. Check the status below."
+          title: "push"
+          description: "push to main branch"
+          image: ${{ secrets.EMBED_IMAGE }}
