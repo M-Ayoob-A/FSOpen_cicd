@@ -61,6 +61,6 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}\
+          status: ${{ job.status }}
           content: 'Hey @Ratchat065'
-          tittle: 'push to main branch'
+          title: 'push to main branch'
