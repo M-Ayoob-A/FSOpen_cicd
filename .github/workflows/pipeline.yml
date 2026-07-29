@@ -9,7 +9,7 @@ on:
       - main
     types:
       - opened
-      - synchronize
+      - synchronizeF
 
 jobs:
   building_and_testing:
@@ -21,8 +21,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Setup flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Install dependencies 
         run: npm install  
       - name: Check style        
@@ -66,6 +64,8 @@ jobs:
     needs: [building_and_testing]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+      - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to flyctl
         if: ${{ github.event_name != 'pull_request' }}
         run: flyctl deploy --remote-only
