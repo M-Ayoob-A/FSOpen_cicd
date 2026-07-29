@@ -34,20 +34,6 @@ jobs:
       - name: Run Playwright test
         run: npm run test:e2e
 
-  notify_deployment:
-    needs: [building_and_testing]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Send a notification to fullstack_webhook
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        status: ${{ needs.building_and_testing.result }}
-        content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
-        image: ${{ secrets.EMBED_IMAGE }}
-        color: ${{ needs.building_and_testing.result == 'failure' && 'ff0000' || '00ff00' }}
-
   tag_release:
     if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
     needs: [building_and_testing]
@@ -60,6 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: false
           DEFAULT_BUMP: patch
+
   deploy_to_fly:
     needs: [building_and_testing]
     runs-on: ubuntu-latest
@@ -71,3 +58,17 @@ jobs:
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          
+    notify_deployment:
+    needs: [building_and_testing, deploy_to_fly]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send a notification to fullstack_webhook
+      uses: sarisia/actions-status-discord@v1
+      if: always()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ needs.building_and_testing.result }}
+        content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
+        image: ${{ secrets.EMBED_IMAGE }}
+        color: ${{ needs.building_and_testing.result == 'failure' && 'ff0000' || '00ff00' }}
