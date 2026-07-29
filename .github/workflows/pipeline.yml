@@ -60,7 +60,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           
     notify_deployment:
-    needs: [building_and_testing, deploy_to_fly]
+    needs: [building_and_testing]
     runs-on: ubuntu-latest
     steps:
     - name: Send a notification to fullstack_webhook
