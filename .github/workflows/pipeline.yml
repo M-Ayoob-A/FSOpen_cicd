@@ -12,7 +12,7 @@ on:
       - synchronize
 
 jobs:
-  simple_deployment_pipeline:
+  building_and_testing:
     if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
@@ -35,23 +35,24 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright test
         run: npm run test:e2e
-      - name: Deploy to flyctl
-        if: ${{ github.event_name != 'pull_request' }}
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      - name: Send a notification to fullstack_webhook
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
-          image: ${{ secrets.EMBED_IMAGE }}
-          color: ${{ job.status == 'failure' && 'ff0000' || '00ff00' }}
+
+  notify_deployment:
+    needs: [building_and_testing]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send a notification to fullstack_webhook
+      uses: sarisia/actions-status-discord@v1
+      if: always()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ needs.building_and_testing.result }}
+        content: "Hey <@800100468763263047>, the deployment pipeline has completed. Check the status below."
+        image: ${{ secrets.EMBED_IMAGE }}
+        color: ${{ needs.building_and_testing.result == 'failure' && 'ff0000' || '00ff00' }}
+
   tag_release:
     if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
-    needs: [simple_deployment_pipeline]
+    needs: [building_and_testing]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -61,4 +62,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: false
           DEFAULT_BUMP: patch
-      
+  deploy_to_fly:
+    needs: [building_and_testing]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to flyctl
+        if: ${{ github.event_name != 'pull_request' }}
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
