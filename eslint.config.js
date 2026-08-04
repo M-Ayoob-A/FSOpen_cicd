@@ -73,5 +73,13 @@ module.exports = [
       'no-console': 'error',
       'react/prop-types': 0
     }
+  },
+  {
+    files: ["jest.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node, 
+      },
+    },
   }
 ]
