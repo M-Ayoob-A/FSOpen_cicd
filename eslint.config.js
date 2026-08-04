@@ -75,7 +75,7 @@ module.exports = [
     }
   },
   {
-    files: ["jest.config.js"],
+    files: ["jest.setup.js"],
     languageOptions: {
       globals: {
         ...globals.node, 
