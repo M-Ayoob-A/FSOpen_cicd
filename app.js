@@ -12,6 +12,7 @@ app.get('/health', (req, res) => {
 })
 
 // Code addition for PR exercise
+// superfluous addition
 
 const start = async () => {
   await app.listen(PORT)
