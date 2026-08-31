@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  test_and_build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -20,9 +20,14 @@ jobs:
         run: npm install  
       - name: Check style        
         run: npm run eslint
-      - run: npm test
-      - run: npm run build
-      - uses: sarisia/actions-status-discord@v1
+      - name: test
+        run: npm test
+      - name: build
+        run: npm run build
+      - name: failing condition
+        run: exit 1
+      - name: notify failure
+        uses: sarisia/actions-status-discord@v1
         if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
@@ -35,20 +40,29 @@ jobs:
             *Commit ID*: ${{ github.event.head_commit.id }}
             [Link to commit](${{ github.event.head_commit.url }})
           color: 0xff0000
+  deployment:
+    needs: test_and_build
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && ! contains( join(github.event.commits.*.message), '#skip') }}    
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-      - uses: sarisia/actions-status-discord@v1
+  notify_success:
+    needs: [test_and_build, deployment]
+    runs-on: ubuntu-latest
+    steps:
+      - name: notify success
+        uses: sarisia/actions-status-discord@v1
         if: success()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           title: "Deployment success"
-          content: ✅ *Build Successful!* 
+          content: ✅ *Deployment Successful!* 
           description: "[Link to commit](${{ github.event.head_commit.url }})"
           color: 0x008000
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [test_and_build, deployment]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && ! contains( join(github.event.commits.*.message), '#skip') }}
     steps:
