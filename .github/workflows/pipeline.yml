@@ -24,8 +24,6 @@ jobs:
         run: npm test
       - name: build
         run: npm run build
-      - name: failing condition
-        run: exit 1
       - name: notify failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
