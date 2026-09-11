@@ -12,6 +12,8 @@ Start by running `npm install` inside the project folder
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
 
-## Render URL
+## Links for submission
 
-[Render URL](https://fsopen-pokemon-cicd.onrender.com)
+[Deployed Pokedex App URL](https://fsopen-pokemon-cicd.onrender.com)
+
+[GitHub Repo for Exercise 21-22](https://github.com/M-Ayoob-A/FSOpen_cicd_ex21)
